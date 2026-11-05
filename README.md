@@ -1,18 +1,21 @@
-# মেঘ বালিকা — প্রাথমিক ওয়েবসাইট
+# মেঘ বালিকা — নতুন ডিজাইন
 
-## ফাইল
-- `index.html` — রেসপনসিভ হোমপেজ, ক্যাটাগরি, ডেমো পোস্ট ও সার্চ।
+ফাইল: `index.html`, `style.css`, `app.js`। তিনটি ফাইল একই ফোল্ডারে রাখুন।
 
-## লোকালি দেখা
-`index.html` ফাইলটি ব্রাউজারে খুলুন।
-
-## GitHub Pages / Cloudflare Pages
-1. GitHub-এ নতুন public repository তৈরি করুন (যেমন `megh-balika`)।
-2. `index.html` আপলোড করুন।
+## GitHub ও Cloudflare Pages-এ প্রকাশ
+1. GitHub-এ `megh-balika` নামে নতুন repository তৈরি করুন।
+2. এই তিনটি ফাইল repository-র root-এ upload করুন।
 3. Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git।
-4. repository নির্বাচন করুন। Framework preset: `None`; Build command ফাঁকা; Build output directory: `/` (প্রয়োজনে `.`)।
-5. Deploy করুন।
+4. Repository নির্বাচন করুন; Framework preset `None`, Build command ফাঁকা, Build output directory `/` বা `.` দিন।
+5. Deploy চাপুন।
 
-## গুরুত্বপূর্ণ
-এটি প্রথম ধাপের static frontend। মন্তব্য, অ্যাডমিন প্যানেল, লগইন, পোস্ট প্রকাশ, লাইক/বুকমার্ক সিঙ্ক এবং ডাটাবেস এখনও যুক্ত করা হয়নি। এগুলোর জন্য পরের ধাপে Supabase-এর Free plan বা Cloudflare Workers/D1 যুক্ত করতে হবে। বাস্তব মন্তব্য সবার কাছে দেখাতে backend আবশ্যক।
-`hello@example.com`-কে নিজের যোগাযোগের ইমেইল দিয়ে বদলাবেন।
+## বর্তমানে কাজ করে
+- মোবাইল-ফ্রেন্ডলি হোমপেজ ও মেনু
+- ক্যাটাগরি নেভিগেশন
+- ডেমো পোস্টে সার্চ
+- ডার্ক মোড
+
+## পরের ধাপের কাজ
+এটি এখন frontend demo। বাস্তব login/register, admin dashboard, লেখা publish/edit/delete, সবার জন্য shared comments, likes, bookmarks ও newsletter storage চালাতে Supabase Free বা Cloudflare Workers + D1 backend যুক্ত করতে হবে। এগুলো এখনো সংযুক্ত নয়।
+
+ছবি Unsplash থেকে এবং ফন্ট Google Fonts থেকে লোড হয়; নিজের অনুমতিপ্রাপ্ত ছবি দিয়ে পরে বদলানো যাবে।
