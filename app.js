@@ -3,41 +3,31 @@ const mainNav=document.getElementById('mainNav');
 menuToggle.addEventListener('click',()=>mainNav.classList.toggle('open'));
 mainNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mainNav.classList.remove('open')));
 document.getElementById('year').textContent=new Date().getFullYear();
-document.getElementById('themeToggle').addEventListener('click',()=>{
- document.body.classList.toggle('dark');
- document.getElementById('themeToggle').textContent=document.body.classList.contains('dark')?'☀':'☾';
-});
-// Search/header is intentionally NOT sticky: it scrolls away with the page.
-const searchForm=document.getElementById('searchForm');
-searchForm.addEventListener('submit',e=>{
- e.preventDefault();
- const q=document.getElementById('searchInput').value.trim().toLowerCase();
- const cards=[...document.querySelectorAll('[data-search]')];let hits=0;
- cards.forEach(card=>{const match=!q||card.dataset.search.toLowerCase().includes(q)||card.innerText.toLowerCase().includes(q);card.hidden=!match;if(match)hits++;});
- document.getElementById('popular').scrollIntoView({behavior:'smooth'});
- if(q&&!hits)alert('এই ডেমো হোমপেজে মেলানো পোস্ট পাওয়া যায়নি। ব্যাকএন্ড যুক্ত হলে সব প্রকাশিত লেখা সার্চে আসবে।');
-});
-// Hero carousel: auto-advance + finger/mouse swipe, no previous/next buttons.
-const slider=document.getElementById('heroSlider');
-const slides=[...slider.querySelectorAll('.hero-slide')];
-const dots=[...document.querySelectorAll('#slideDots span')];
-let active=0,timer=null,startX=0,startY=0;
-function showSlide(index){
- active=(index+slides.length)%slides.length;
- slides.forEach((s,i)=>s.classList.toggle('active',i===active));
- dots.forEach((d,i)=>d.classList.toggle('active',i===active));
-}
-function startAuto(){stopAuto();timer=setInterval(()=>showSlide(active+1),5000);}
-function stopAuto(){if(timer)clearInterval(timer);}
-slider.addEventListener('pointerdown',e=>{startX=e.clientX;startY=e.clientY;stopAuto();});
-slider.addEventListener('pointerup',e=>{
- const dx=e.clientX-startX,dy=e.clientY-startY;
- if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))showSlide(active+(dx<0?1:-1));
- startAuto();
-});
-slider.addEventListener('pointercancel',startAuto);
-slider.addEventListener('mouseenter',stopAuto);
-slider.addEventListener('mouseleave',startAuto);
-document.addEventListener('visibilitychange',()=>document.hidden?stopAuto():startAuto());
-startAuto();
-document.getElementById('newsletter').addEventListener('submit',e=>{e.preventDefault();alert('ধন্যবাদ! ইমেইল সাবস্ক্রিপশন চালু করতে ব্যাকএন্ড সংযোগ প্রয়োজন।');});
+document.getElementById('themeToggle').addEventListener('click',()=>{document.body.classList.toggle('dark');document.getElementById('themeToggle').textContent=document.body.classList.contains('dark')?'☀':'☾';});
+// Header and search scroll naturally; neither is sticky.
+const sb=window.mbSupabase;let activePost=null,readerUser=null;
+const byId=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const authModal=byId('authModal'),postModal=byId('postModal');
+function openAuth(mode='login'){authModal.classList.remove('hidden');byId('readerAuthStatus').textContent='';byId('readerAuthForm').dataset.mode=mode;byId('authTitle').textContent=mode==='signup'?'নতুন অ্যাকাউন্ট তৈরি করুন':'মেঘ বালিকায় লগইন করুন';byId('readerName').style.display=mode==='signup'?'block':'none';byId('readerLoginBtn').textContent=mode==='signup'?'অ্যাকাউন্ট তৈরি':'লগইন';byId('readerSignupBtn').textContent=mode==='signup'?'লগইনে ফিরুন':'নতুন অ্যাকাউন্ট';}
+byId('openLogin').addEventListener('click',e=>{e.preventDefault();openAuth('login')});byId('openRegister').addEventListener('click',e=>{e.preventDefault();openAuth('signup')});
+byId('closeAuthModal').addEventListener('click',()=>authModal.classList.add('hidden'));
+byId('closePostModal').addEventListener('click',()=>postModal.classList.add('hidden'));
+[authModal,postModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.add('hidden')}));
+byId('readerAuthForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){byId('readerAuthStatus').textContent='ওয়েবসাইটের মালিক এখনো Supabase সংযোগ করেননি।';return;}const email=byId('readerEmail').value.trim(),password=byId('readerPassword').value,mode=e.currentTarget.dataset.mode;byId('readerAuthStatus').textContent='অপেক্ষা করুন...';let result;if(mode==='signup')result=await sb.auth.signUp({email,password,options:{data:{display_name:byId('readerName').value.trim()||'পাঠক'}}});else result=await sb.auth.signInWithPassword({email,password});byId('readerAuthStatus').textContent=result.error?result.error.message:(mode==='signup'?'অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল নিশ্চিত করতে হতে পারে।':'লগইন সফল হয়েছে।');if(!result.error&&mode==='login'){readerUser=result.data.user;setTimeout(()=>authModal.classList.add('hidden'),600);}});
+byId('readerSignupBtn').addEventListener('click',()=>{const form=byId('readerAuthForm');const next=form.dataset.mode==='signup'?'login':'signup';form.dataset.mode=next;byId('authTitle').textContent=next==='signup'?'নতুন অ্যাকাউন্ট তৈরি করুন':'মেঘ বালিকায় লগইন করুন';byId('readerName').style.display=next==='signup'?'block':'none';byId('readerLoginBtn').textContent=next==='signup'?'অ্যাকাউন্ট তৈরি':'লগইন';byId('readerSignupBtn').textContent=next==='signup'?'লগইনে ফিরুন':'নতুন অ্যাকাউন্ট';byId('readerAuthStatus').textContent='';});
+async function loadSession(){if(!sb)return;const {data:{session}}=await sb.auth.getSession();readerUser=session?.user||null;sb.auth.onAuthStateChange((_event,session)=>{readerUser=session?.user||null;});}
+function renderPosts(posts){const host=byId('popular');host.innerHTML='';if(!posts.length){host.innerHTML='<p class="muted">এখনো কোনো লেখা প্রকাশিত হয়নি। খুব শিগগিরই নতুন লেখা আসছে।</p>';return;}posts.forEach((p,i)=>{const card=document.createElement('article');card.className='post-card';card.dataset.search=`${p.title} ${p.category} ${p.excerpt||''}`;const img=document.createElement('img');img.src=p.cover_image||`https://images.unsplash.com/photo-${['1517841905240-472988babdf9','1500530855697-b586d89ba3ee','1498050108023-c5249f4df085'][i%3]}?auto=format&fit=crop&w=700&q=80`;img.alt=p.title;const info=document.createElement('div');info.className='post-info';const pill=document.createElement('span');pill.className='pill';pill.textContent=p.category;const title=document.createElement('h3');title.textContent=p.title;const meta=document.createElement('div');meta.className='post-meta';meta.innerHTML='<span>♡ পড়ুন</span><span>মন্তব্য দেখুন</span>';info.append(pill,title,meta);card.append(img,info);card.addEventListener('click',()=>openPost(p));host.append(card);});}
+async function loadPublishedPosts(){if(!sb)return;const {data,error}=await sb.from('posts').select('id,title,slug,category,excerpt,content,cover_image,created_at').eq('status','published').order('created_at',{ascending:false}).limit(12);if(error){console.warn('পোস্ট লোড হয়নি',error.message);return;}renderPosts(data||[]);}
+async function openPost(post){activePost=post;byId('modalCategory').textContent=post.category;byId('modalTitle').textContent=post.title;byId('modalExcerpt').textContent=post.excerpt||'';byId('modalContent').textContent=post.content;postModal.classList.remove('hidden');await loadPostEngagement(post.id);}
+async function loadPostEngagement(postId){if(!sb)return;const [{data:likes},{data:comments}]=await Promise.all([sb.from('likes').select('id,user_id').eq('post_id',postId),sb.from('comments').select('author_name,content,created_at').eq('post_id',postId).eq('approved',true).order('created_at',{ascending:true})]);const mine=(likes||[]).some(l=>l.user_id===readerUser?.id);byId('likeButton').textContent=mine?'♥ লাইক দেওয়া হয়েছে':'♡ লাইক';byId('likeCount').textContent=`${(likes||[]).length.toLocaleString('bn-BD')}টি লাইক`;byId('commentsFeed').innerHTML='';(comments||[]).forEach(c=>{const el=document.createElement('div');el.className='comment-item';const name=document.createElement('strong');name.textContent=c.author_name;const body=document.createElement('p');body.textContent=c.content;el.append(name,body);byId('commentsFeed').append(el);});if(!(comments||[]).length)byId('commentsFeed').textContent='এখনো কোনো অনুমোদিত মন্তব্য নেই।';}
+byId('likeButton').addEventListener('click',async()=>{if(!sb||!activePost)return;if(!readerUser){openAuth('login');return;}const {data:existing}=await sb.from('likes').select('id').eq('post_id',activePost.id).eq('user_id',readerUser.id).maybeSingle();const result=existing?await sb.from('likes').delete().eq('id',existing.id):await sb.from('likes').insert({post_id:activePost.id,user_id:readerUser.id});if(result.error)alert(result.error.message);else await loadPostEngagement(activePost.id);});
+byId('commentForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb||!activePost)return;if(!readerUser){openAuth('login');return;}const content=byId('commentText').value.trim();if(content.length<2)return;const name=readerUser.user_metadata?.display_name||readerUser.email?.split('@')[0]||'পাঠক';const {error}=await sb.from('comments').insert({post_id:activePost.id,user_id:readerUser.id,author_name:name,content,approved:false});byId('commentStatus').textContent=error?error.message:'মন্তব্য জমা হয়েছে। অ্যাডমিন অনুমোদন করলে দেখা যাবে।';if(!error)byId('commentText').value='';});
+const searchForm=byId('searchForm');searchForm.addEventListener('submit',e=>{e.preventDefault();const q=byId('searchInput').value.trim().toLowerCase();document.querySelectorAll('#popular .post-card').forEach(card=>card.hidden=!!q&&!card.dataset.search.toLowerCase().includes(q));byId('popular').scrollIntoView({behavior:'smooth'});});
+// Hero slider: auto-advance and touch/mouse swipe; no arrow controls.
+const slider=byId('heroSlider'),slides=[...slider.querySelectorAll('.hero-slide')],dots=[...document.querySelectorAll('#slideDots span')];let active=0,timer=null,startX=0,startY=0;
+function showSlide(index){active=(index+slides.length)%slides.length;slides.forEach((s,i)=>s.classList.toggle('active',i===active));dots.forEach((d,i)=>d.classList.toggle('active',i===active));}
+function stopAuto(){if(timer)clearInterval(timer);}function startAuto(){stopAuto();timer=setInterval(()=>showSlide(active+1),5000);}
+slider.addEventListener('pointerdown',e=>{startX=e.clientX;startY=e.clientY;stopAuto();});slider.addEventListener('pointerup',e=>{const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))showSlide(active+(dx<0?1:-1));startAuto();});slider.addEventListener('pointercancel',startAuto);slider.addEventListener('mouseenter',stopAuto);slider.addEventListener('mouseleave',startAuto);document.addEventListener('visibilitychange',()=>document.hidden?stopAuto():startAuto());startAuto();
+byId('newsletter').addEventListener('submit',e=>{e.preventDefault();alert('নিউজলেটার সাবস্ক্রিপশন পরবর্তী ধাপে যুক্ত হবে।');});
+loadSession().then(loadPublishedPosts);
