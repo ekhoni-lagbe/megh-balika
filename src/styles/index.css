@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream-50 text-ink font-bengali;
+    font-feature-settings: 'kern' 1;
+  }
+
+  ::selection {
+    @apply bg-rose text-ink;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-burgundy;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-cream {
+    background: linear-gradient(180deg, #fdfbf7 0%, #faf5ec 100%);
+  }
+
+  .gradient-rose {
+    background: linear-gradient(135deg, #f2e9d8 0%, #e8c5c5 100%);
+  }
+}
