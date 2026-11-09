@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactElement } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { RootLayout } from '@/layouts/RootLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -30,7 +30,9 @@ function Fallback() {
   );
 }
 
-const withSuspense = (el: JSX.Element) => <Suspense fallback={<Fallback />}>{el}</Suspense>;
+function withSuspense(el: ReactElement) {
+  return <Suspense fallback={<Fallback />}>{el}</Suspense>;
+}
 
 const router = createBrowserRouter([
   {
