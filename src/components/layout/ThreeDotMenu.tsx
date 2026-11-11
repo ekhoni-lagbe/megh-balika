@@ -25,7 +25,7 @@ export function ThreeDotMenu() {
       {open && (
         <nav
           aria-label="অতিরিক্ত নেভিগেশন"
-          className="absolute right-0 top-12 z-50 w-56 animate-slide-in overflow-hidden rounded-2xl border border-burgundy/10 bg-cream-50 p-2 shadow-float"
+          className="absolute right-0 top-12 z-50 w-60 animate-slide-in overflow-hidden rounded-2xl border border-burgundy/10 bg-cream-50 p-2 shadow-float"
         >
           {NAV_ITEMS.map((item) => (
             <NavLink
