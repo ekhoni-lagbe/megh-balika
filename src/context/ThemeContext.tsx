@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
-type ReadingTheme = 'light' | 'sepia' | 'dark';
+type ReadingTheme = 'light' | 'sepia' | 'dark' | 'eyeComfort';
 
 interface ThemeContextValue {
   readingTheme: ReadingTheme;
